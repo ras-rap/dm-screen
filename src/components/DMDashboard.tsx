@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sun, Moon, Plus } from 'lucide-react';
-import { PlayerType, emptyPlayer, importPlayerFromFile } from './types';
+import { PlayerType, emptyPlayer } from './types';
 import { DiceRoller } from '@/components/DiceRoller';
 import { NotesSection } from '@/components/NotesSection';
 import { PlayerCard } from '@/components/player/PlayerCard';
@@ -8,12 +8,11 @@ import { PlayerModal } from '@/components/player/PlayerModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 
-const DMDashboard = () => {
-  const [notes, setNotes] = useState("");
+const DMDashboard: React.FC = () => {
+  const [notes, setNotes] = useState<string>("");
   const [players, setPlayers] = useState<PlayerType[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [editingPlayer, setEditingPlayer] = useState<PlayerType | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newPlayer, setNewPlayer] = useState<PlayerType>(emptyPlayer);
@@ -45,31 +44,7 @@ const DMDashboard = () => {
     });
   };
 
-  const handleInputChange = (index: number, field: string, value: string) => {
-    setPlayers(prev => {
-      const updatedPlayers = [...prev];
-      if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        if (parent === 'inventory') {
-          if (!updatedPlayers[index].inventory) {
-            updatedPlayers[index].inventory = Array(7).fill("");
-          }
-          updatedPlayers[index].inventory[parseInt(child)] = value;
-        } else {
-          if (!updatedPlayers[index][parent]) {
-            updatedPlayers[index][parent] = {};
-          }
-          updatedPlayers[index][parent][child] = value;
-        }
-      } else {
-        updatedPlayers[index][field] = value;
-      }
-      localStorage.setItem('players', JSON.stringify(updatedPlayers));
-      return updatedPlayers;
-    });
-  };
-
-  const handleEditInputChange = (field: string, value: string) => {
+  const handleEditInputChange = (field: keyof PlayerType | string, value: string) => {
     if (!editingPlayer) return;
 
     if (field.includes('.')) {
@@ -86,7 +61,7 @@ const DMDashboard = () => {
           return {
             ...prev!,
             [parent]: {
-              ...prev![parent as keyof PlayerType],
+              ...(prev![parent as keyof PlayerType] as Record<string, string>),
               [child]: value
             }
           };
@@ -100,19 +75,26 @@ const DMDashboard = () => {
     }
   };
 
-  const handleNewPlayerInputChange = (field: string, value: string) => {
+  const handleNewPlayerInputChange = (field: keyof PlayerType | string, value: string) => {
     setNewPlayer(prev => {
-      const updatedPlayer = { ...prev };
+      const updatedPlayer: Partial<PlayerType> = { ...prev };
       if (field.includes('.')) {
         const [parent, child] = field.split('.');
-        if (!updatedPlayer[parent]) {
-          updatedPlayer[parent] = {};
+        if (parent === 'inventory') {
+          if (!updatedPlayer.inventory) {
+            updatedPlayer.inventory = Array(7).fill("");
+          }
+          updatedPlayer.inventory[parseInt(child)] = value;
+        } else {
+          if (!updatedPlayer[parent as keyof PlayerType]) {
+            (updatedPlayer[parent as keyof PlayerType] as { [key: string]: string }) = {};
+          }
+          (updatedPlayer[parent as keyof PlayerType] as Record<string, string>)[child] = value;
         }
-        updatedPlayer[parent][child] = value;
       } else {
-        updatedPlayer[field] = value;
+        (updatedPlayer as Record<string, string>)[field] = value;
       }
-      return updatedPlayer;
+      return updatedPlayer as PlayerType;
     });
   };
 
@@ -136,10 +118,10 @@ const DMDashboard = () => {
     }
   };
 
-  const saveToLocalStorage = () => {
+  const saveToLocalStorage = useCallback(() => {
     localStorage.setItem('players', JSON.stringify(players));
     localStorage.setItem('notes', notes);
-  };
+  }, [players, notes]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -147,39 +129,7 @@ const DMDashboard = () => {
     }, 5000); // Auto-save every 5 seconds
 
     return () => clearInterval(interval);
-  }, [players, notes]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const exportPlayers = (format: 'json' | 'text') => {
-    const data = format === 'json' ? JSON.stringify(players, null, 2) : players.map(player => `
-Name: ${player.name}
-Race: ${player.race}
-Class: ${player.class}
-Level: ${player.level}
-HP: ${player.hp}
-AC: ${player.ac}
-Backstory: ${player.backstory}
-Notes: ${player.notes}
-Stats:
-  STR: ${player.stats.str}
-  DEX: ${player.stats.dex}
-  CON: ${player.stats.con}
-  INT: ${player.stats.int}
-  WIS: ${player.stats.wis}
-  CHA: ${player.stats.cha}
-`).join('\n\n');
-
-    const blob = new Blob([data], { type: format === 'json' ? 'application/json' : 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `players.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  }, [saveToLocalStorage]);
 
   const exportPlayer = (player: PlayerType, format: 'json' | 'text') => {
     const data = format === 'json' ? JSON.stringify(player, null, 2) : `
@@ -207,45 +157,6 @@ Stats:
     a.download = `${player.name}.${format}`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const importPlayers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (file.type === 'application/json') {
-        setPlayers(JSON.parse(content));
-      } else {
-        const importedPlayers = content.split('\n\n').map(playerText => {
-          const player: PlayerType = { ...emptyPlayer };
-          playerText.split('\n').forEach(line => {
-            const [key, value] = line.split(': ').map(s => s.trim());
-            if (key && value) {
-              if (key.startsWith('Stats')) {
-                const statKey = key.split(' ')[1].toLowerCase();
-                player.stats[statKey as keyof PlayerType['stats']] = value;
-              } else {
-                player[key.toLowerCase() as keyof PlayerType] = value;
-              }
-            }
-          });
-          return player;
-        });
-        setPlayers(importedPlayers);
-      }
-      localStorage.setItem('players', JSON.stringify(players));
-    };
-    reader.readAsText(file);
-  };
-
-  const handleImportNewPlayer = (file: File) => {
-    importPlayerFromFile(file).then((importedPlayer) => {
-      setPlayers(prev => [...prev, importedPlayer]);
-      localStorage.setItem('players', JSON.stringify([...players, importedPlayer]));
-    }).catch(console.error);
   };
 
   const onInventoryChange = (playerIndex: number, itemIndex: number, value: string) => {
@@ -304,7 +215,6 @@ Stats:
                 onInputChange={handleNewPlayerInputChange}
                 onSave={handleAddPlayer}
                 title="Add New Player"
-                isDarkMode={isDarkMode} // Pass the isDarkMode prop
               />
             </Dialog>
             <div className="space-y-4">
@@ -319,8 +229,6 @@ Stats:
                 />
               ))}
             </div>
-
-            {/* Keep the import/export section */}
           </CardContent>
         </Card>
       </div>

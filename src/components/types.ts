@@ -15,7 +15,7 @@ export interface PlayerType {
     wis: string;
     cha: string;
   };
-  inventory: string[]; // Add this line
+  inventory: string[];
 }
 
 export const emptyPlayer: PlayerType = {
@@ -35,7 +35,7 @@ export const emptyPlayer: PlayerType = {
     wis: "",
     cha: "",
   },
-  inventory: Array(7).fill(""), // Initialize with 7 empty slots
+  inventory: [],
 };
 
 export const importPlayerFromFile = (file: File): Promise<PlayerType> => {

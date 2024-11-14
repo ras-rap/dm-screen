@@ -5,46 +5,40 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-interface PlayerModalProps {
+export interface PlayerModalProps {
   player: PlayerType;
   onInputChange: (field: string, value: string) => void;
   onSave: () => void;
   title: string;
 }
 
-export const PlayerModal = ({ player, onInputChange, onSave, title }: PlayerModalProps) => (
+export const PlayerModal: React.FC<PlayerModalProps> = ({ player, onInputChange, onSave, title }) => (
   <DialogContent className="max-w-2xl">
     <DialogHeader>
       <DialogTitle>{title}</DialogTitle>
     </DialogHeader>
     <div className="grid grid-cols-2 gap-4">
       <Input
-        placeholder="Name"
         value={player.name}
         onChange={(e) => onInputChange('name', e.target.value)}
       />
       <Input
-        placeholder="Race"
         value={player.race}
         onChange={(e) => onInputChange('race', e.target.value)}
       />
       <Input
-        placeholder="Class"
         value={player.class}
         onChange={(e) => onInputChange('class', e.target.value)}
       />
       <Input
-        placeholder="Level"
         value={player.level}
         onChange={(e) => onInputChange('level', e.target.value)}
       />
       <Input
-        placeholder="HP"
         value={player.hp}
         onChange={(e) => onInputChange('hp', e.target.value)}
       />
       <Input
-        placeholder="AC"
         value={player.ac}
         onChange={(e) => onInputChange('ac', e.target.value)}
       />
@@ -62,9 +56,7 @@ export const PlayerModal = ({ player, onInputChange, onSave, title }: PlayerModa
         </div>
       </div>
       <div className="col-span-2">
-        <h4 className="mb-2 font-medium">Backstory</h4>
         <Textarea
-          placeholder="Character backstory..."
           value={player.backstory}
           onChange={(e) => onInputChange('backstory', e.target.value)}
           className="min-h-[100px]"
@@ -87,7 +79,6 @@ export const PlayerModal = ({ player, onInputChange, onSave, title }: PlayerModa
       <div className="col-span-2">
         <h4 className="mb-2 font-medium">Notes</h4>
         <Textarea
-          placeholder="Additional notes..."
           value={player.notes}
           onChange={(e) => onInputChange('notes', e.target.value)}
           className="min-h-[100px]"
