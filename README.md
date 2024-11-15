@@ -17,7 +17,7 @@ Enjoy your adventures!
 
 ## Getting Started
 
-To get started with the DM Screen, simply visit the public instance at [https://dms.ras-rap.click](https://dms.ras-rap.click).
+To get started with the DM Screen, simply visit the public instance at **Not out yet**.
 
 ## Contributing
 
