@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sun, Moon, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { PlayerType, emptyPlayer } from './types';
 import { DiceRoller } from '@/components/DiceRoller';
 import { NotesSection } from '@/components/NotesSection';
@@ -8,6 +8,7 @@ import { PlayerModal } from '@/components/player/PlayerModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import SettingsModal from '@/components/SettingsModal';
 
 const DMDashboard: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
@@ -171,6 +172,38 @@ Stats:
     });
   };
 
+  const exportCampaign = () => {
+    const campaignData = {
+      notes,
+      players,
+    };
+
+    const data = JSON.stringify(campaignData, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'campaign.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importCampaign = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const campaignData = JSON.parse(e.target?.result as string);
+        setNotes(campaignData.notes);
+        setPlayers(campaignData.players);
+        localStorage.setItem('notes', campaignData.notes);
+        localStorage.setItem('players', JSON.stringify(campaignData.players));
+      } catch (error) {
+        console.error('Error importing campaign:', error);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className={`min-h-screen p-4 transition-colors duration-200 ${
       isDarkMode ? 'dark bg-slate-950' : 'bg-gray-100'
@@ -180,21 +213,16 @@ Stats:
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             DM Screen
           </h1>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="border-2 border-slate-700 hover:border-slate-600 hover:bg-slate-800"
-          >
-            {isDarkMode ? 
-              <Sun className="h-5 w-5 text-yellow-400" /> : 
-              <Moon className="h-5 w-5" />
-            }
-          </Button>
+          <SettingsModal 
+            isDarkMode={isDarkMode} 
+            setIsDarkMode={setIsDarkMode} 
+            exportCampaign={exportCampaign} 
+            importCampaign={importCampaign} 
+          />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <NotesSection notes={notes} onNotesChange={handleNotesChange} />
+          <NotesSection notes={notes} onNotesChange={handleNotesChange} isDarkMode={isDarkMode} />
           <DiceRoller />
         </div>
 
@@ -205,7 +233,7 @@ Stats:
           <CardContent>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="w-full mb-6">
+                <Button className={`w-full mb-6 ${isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-500 text-black'}`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add New Player
                 </Button>
@@ -215,6 +243,7 @@ Stats:
                 onInputChange={handleNewPlayerInputChange}
                 onSave={handleAddPlayer}
                 title="Add New Player"
+                isDarkMode={isDarkMode}
               />
             </Dialog>
             <div className="space-y-4">
@@ -241,9 +270,15 @@ Stats:
             onInputChange={handleEditInputChange}
             onSave={saveEditing}
             title="Edit Player"
+            isDarkMode={isDarkMode}
           />
         </Dialog>
       )}
+
+      {/* Footer */}
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        Created by Ras_rap
+      </footer>
     </div>
   );
 };

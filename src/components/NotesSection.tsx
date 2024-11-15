@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 
 export const NotesSection = ({
   notes,
-  onNotesChange
+  onNotesChange,
+  isDarkMode
 }: {
   notes: string;
   onNotesChange: (value: string) => void;
+  isDarkMode: boolean;
 }) => (
   <Card className="border-2">
     <CardHeader>
@@ -19,10 +21,10 @@ export const NotesSection = ({
       <Textarea
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
-        className="min-h-[200px]"
+        className={`min-h-[200px] ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}
         placeholder="Write your campaign notes here..."
       />
-      <Button className="w-full">
+      <Button className={`w-full ${isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-500 text-black'}`}>
         <Save className="mr-2 h-4 w-4" />
         Save Notes
       </Button>
