@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlayerType } from "../../components/types";
-import { Badge } from "../../components/ui/badge";
-import { Card } from "../../components/ui/card";
+import { PlayerType } from "@/components/types";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface PlayerDetailsProps {
   player: PlayerType;

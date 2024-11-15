@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { PlayerType, emptyPlayer } from './types';
-import { DiceRoller } from '../components/DiceRoller';
-import { NotesSection } from '../components/NotesSection';
-import { PlayerCard } from '../components/player/PlayerCard';
-import { PlayerModal } from '../components/player/PlayerModal';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Dialog, DialogTrigger } from '../components/ui/dialog';
-import SettingsModal from '../components/SettingsModal';
+import { DiceRoller } from '@/components/DiceRoller';
+import { NotesSection } from '@/components/NotesSection';
+import { PlayerCard } from '@/components/player/PlayerCard';
+import { PlayerModal } from '@/components/player/PlayerModal';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import SettingsModal from '@/components/SettingsModal';
 
 const DMDashboard: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
@@ -274,11 +274,6 @@ Stats:
           />
         </Dialog>
       )}
-
-      {/* Footer */}
-      <footer className="mt-8 text-center text-sm text-muted-foreground">
-        Created by Ras_rap
-      </footer>
     </div>
   );
 };
