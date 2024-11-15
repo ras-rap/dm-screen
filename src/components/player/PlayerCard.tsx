@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Edit2, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
-import { PlayerType } from '@/components/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { PlayerDetails } from '@/components/player/PlayerDetails';
+import { PlayerType } from '../../components/types';
+import { Card, CardContent } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/collapsible';
+import { PlayerDetails } from '../../components/player/PlayerDetails';
 
 interface PlayerCardProps { 
   player: PlayerType;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Button } from '../components/ui/button';
 import { Sun, Moon, Upload, Download, Settings } from 'lucide-react';
 
 interface SettingsModalProps {
