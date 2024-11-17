@@ -7,7 +7,8 @@ Welcome to the DM Screen project! This tool is designed to help Dungeon Masters 
 - **Players Management**: Easily add, edit, and remove players from your campaign.
 - **Dice Rolling**: Integrated dice roller to handle all your in-game rolling needs.
 - **Campaign Notes**: Keep track of important campaign notes and story details.
-- **Player Importing/Exporting**: Import and export player data for easy sharing and backup.
+- **Entity Importing/Exporting**: Import and export entity data for easy sharing and backup.
+- **Campaign Importing/Exporting**: Import the whole campagin for way sharing and backup.
 
 ## About
 
@@ -17,7 +18,7 @@ Enjoy your adventures!
 
 ## Getting Started
 
-To get started with the DM Screen, simply visit the public instance at **Not out yet**.
+To get started with the DM Screen, simply visit the public instance at [dms.ras-rap.click](https://dms.ras-rap.click/).
 
 ## Contributing
 

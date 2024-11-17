@@ -12,3 +12,7 @@ Added a footer
 
 Added a D2
 Added tabs for other entities such as NPCs and enemys
+
+## 1.1.1 11/12/2024
+
+Changed README.MD
