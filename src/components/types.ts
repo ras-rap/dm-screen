@@ -35,7 +35,7 @@ export const emptyPlayer: PlayerType = {
     wis: "",
     cha: "",
   },
-  inventory: [],
+  inventory: ["", "", "", "", "", "", ""],
 };
 
 export const importPlayerFromFile = (file: File): Promise<PlayerType> => {

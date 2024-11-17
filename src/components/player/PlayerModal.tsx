@@ -98,7 +98,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({ player, onInputChange,
         <Button
           variant="outline"
           onClick={() => document.getElementById('import-player-input')?.click()}
-          className={`${isDarkMode ? 'border-white text-black' : 'border-black text-black'}`}
+          className={`${isDarkMode ? 'border-black text-black' : 'border-white text-black'}`}
         >
           Import Player
         </Button>

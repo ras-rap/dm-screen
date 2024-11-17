@@ -9,19 +9,36 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import SettingsModal from '@/components/SettingsModal';
+import { Tab } from '@headlessui/react';
 
 const DMDashboard: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [players, setPlayers] = useState<PlayerType[]>([]);
+  const [npcs, setNpcs] = useState<PlayerType[]>([]);
+  const [enemies, setEnemies] = useState<PlayerType[]>([]);
+  const [misc, setMisc] = useState<PlayerType[]>([]);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [editingPlayer, setEditingPlayer] = useState<PlayerType | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newPlayer, setNewPlayer] = useState<PlayerType>(emptyPlayer);
+  const [currentTab, setCurrentTab] = useState<string>('Players');
 
   useEffect(() => {
     const savedPlayers = localStorage.getItem('players');
     if (savedPlayers) {
       setPlayers(JSON.parse(savedPlayers));
+    }
+    const savedNpcs = localStorage.getItem('npcs');
+    if (savedNpcs) {
+      setNpcs(JSON.parse(savedNpcs));
+    }
+    const savedEnemies = localStorage.getItem('enemies');
+    if (savedEnemies) {
+      setEnemies(JSON.parse(savedEnemies));
+    }
+    const savedMisc = localStorage.getItem('misc');
+    if (savedMisc) {
+      setMisc(JSON.parse(savedMisc));
     }
     const savedNotes = localStorage.getItem('notes');
     if (savedNotes) {
@@ -29,20 +46,55 @@ const DMDashboard: React.FC = () => {
     }
   }, []);
 
-  const handleAddPlayer = () => {
+  const handleAddEntity = (entityType: string) => {
+    const entitySetter = {
+      'Players': setPlayers,
+      'NPCs': setNpcs,
+      'Enemies': setEnemies,
+      'Misc': setMisc,
+    }[entityType];
+
+    const entityState = {
+      'Players': players,
+      'NPCs': npcs,
+      'Enemies': enemies,
+      'Misc': misc,
+    }[entityType];
+
     if (newPlayer.name) {
-      setPlayers(prev => [...prev, { ...newPlayer }]);
+      const newEntity = { ...newPlayer, inventory: ["", "", "", "", "", "", ""] };
+      if (entitySetter) {
+        entitySetter((prev: PlayerType[]) => [...prev, newEntity]);
+      }
       setNewPlayer(emptyPlayer);
-      localStorage.setItem('players', JSON.stringify([...players, { ...newPlayer }]));
+      if (entityState) {
+        localStorage.setItem(entityType.toLowerCase(), JSON.stringify([...entityState, newEntity]));
+      }
     }
   };
 
-  const handleRemovePlayer = (index: number) => {
-    setPlayers(prev => {
-      const updatedPlayers = prev.filter((_, i) => i !== index);
-      localStorage.setItem('players', JSON.stringify(updatedPlayers));
-      return updatedPlayers;
-    });
+  const handleRemoveEntity = (entityType: string, index: number) => {
+    const entitySetter = {
+      'Players': setPlayers,
+      'NPCs': setNpcs,
+      'Enemies': setEnemies,
+      'Misc': setMisc,
+    }[entityType];
+
+    // const entityState = {
+    //   'Players': players,
+    //   'NPCs': npcs,
+    //   'Enemies': enemies,
+    //   'Misc': misc,
+    // }[entityType];
+
+    if (entitySetter) {
+      entitySetter((prev: PlayerType[]) => {
+        const updatedEntities = prev.filter((_, i) => i !== index);
+        localStorage.setItem(entityType.toLowerCase(), JSON.stringify(updatedEntities));
+        return updatedEntities;
+      });
+    }
   };
 
   const handleEditInputChange = (field: keyof PlayerType | string, value: string) => {
@@ -109,9 +161,16 @@ const DMDashboard: React.FC = () => {
     setEditingIndex(index);
   };
 
-  const saveEditing = () => {
-    if (editingPlayer && editingIndex !== null) {
-      setPlayers(prev => prev.map((p, i) => 
+  const saveEditing = (entityType: string) => {
+    const entitySetter = {
+      'Players': setPlayers,
+      'NPCs': setNpcs,
+      'Enemies': setEnemies,
+      'Misc': setMisc,
+    }[entityType];
+
+    if (editingPlayer && editingIndex !== null && entitySetter) {
+      entitySetter((prev: PlayerType[]) => prev.map((p, i) => 
         i === editingIndex ? editingPlayer : p
       ));
       setEditingPlayer(null);
@@ -121,8 +180,11 @@ const DMDashboard: React.FC = () => {
 
   const saveToLocalStorage = useCallback(() => {
     localStorage.setItem('players', JSON.stringify(players));
+    localStorage.setItem('npcs', JSON.stringify(npcs));
+    localStorage.setItem('enemies', JSON.stringify(enemies));
+    localStorage.setItem('misc', JSON.stringify(misc));
     localStorage.setItem('notes', notes);
-  }, [players, notes]);
+  }, [players, npcs, enemies, misc, notes]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -176,6 +238,9 @@ Stats:
     const campaignData = {
       notes,
       players,
+      npcs,
+      enemies,
+      misc,
     };
 
     const data = JSON.stringify(campaignData, null, 2);
@@ -193,10 +258,20 @@ Stats:
     reader.onload = (e) => {
       try {
         const campaignData = JSON.parse(e.target?.result as string);
+        const initializeInventory = (entity: PlayerType) => ({
+          ...entity,
+          inventory: entity.inventory.length ? entity.inventory : ["", "", "", "", "", "", ""]
+        });
         setNotes(campaignData.notes);
-        setPlayers(campaignData.players);
+        setPlayers(campaignData.players.map(initializeInventory));
+        setNpcs(campaignData.npcs.map(initializeInventory));
+        setEnemies(campaignData.enemies.map(initializeInventory));
+        setMisc(campaignData.misc.map(initializeInventory));
         localStorage.setItem('notes', campaignData.notes);
-        localStorage.setItem('players', JSON.stringify(campaignData.players));
+        localStorage.setItem('players', JSON.stringify(campaignData.players.map(initializeInventory)));
+        localStorage.setItem('npcs', JSON.stringify(campaignData.npcs.map(initializeInventory)));
+        localStorage.setItem('enemies', JSON.stringify(campaignData.enemies.map(initializeInventory)));
+        localStorage.setItem('misc', JSON.stringify(campaignData.misc.map(initializeInventory)));
       } catch (error) {
         console.error('Error importing campaign:', error);
       }
@@ -228,36 +303,63 @@ Stats:
 
         <Card className="border-2">
           <CardHeader>
-            <CardTitle>Players</CardTitle>
+            <CardTitle>Entities</CardTitle>
           </CardHeader>
           <CardContent>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className={`w-full mb-6 ${isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-500 text-black'}`}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Player
-                </Button>
-              </DialogTrigger>
-              <PlayerModal 
-                player={newPlayer}
-                onInputChange={handleNewPlayerInputChange}
-                onSave={handleAddPlayer}
-                title="Add New Player"
-                isDarkMode={isDarkMode}
-              />
-            </Dialog>
-            <div className="space-y-4">
-              {players.map((player, index) => (
-                <PlayerCard
-                  key={index}
-                  player={player}
-                  onEdit={() => startEditing(player, index)}
-                  onDelete={() => handleRemovePlayer(index)}
-                  onExport={(player) => exportPlayer(player, 'json')}
-                  onInventoryChange={(itemIndex, value) => onInventoryChange(index, itemIndex, value)}
-                />
-              ))}
-            </div>
+            <Tab.Group>
+              <Tab.List className="flex space-x-1 bg-blue-900/20 p-1">
+                {['Players', 'NPCs', 'Enemies', 'Misc'].map((category) => (
+                  <Tab
+                    key={category}
+                    className={({ selected }) =>
+                      `w-full py-2.5 text-sm leading-5 font-medium text-blue-700 rounded-lg
+                      ${selected ? 'bg-white shadow' : 'text-blue-100 hover:bg-white/[0.12] hover:text-white'}`
+                    }
+                    onClick={() => setCurrentTab(category)}
+                  >
+                    {category}
+                  </Tab>
+                ))}
+              </Tab.List>
+              <Tab.Panels className="mt-2">
+                {['Players', 'NPCs', 'Enemies', 'Misc'].map((category) => (
+                  <Tab.Panel key={category}>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className={`w-full mb-6 ${isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-500 text-black'}`}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add New {category.slice(0, -1)}
+                        </Button>
+                      </DialogTrigger>
+                      <PlayerModal 
+                        player={newPlayer}
+                        onInputChange={(field, value) => handleNewPlayerInputChange(field, value)}
+                        onSave={() => handleAddEntity(category)}
+                        title={`Add New ${category.slice(0, -1)}`}
+                        isDarkMode={isDarkMode}
+                      />
+                    </Dialog>
+                    <div className="space-y-4">
+                      {({
+                        'Players': players,
+                        'NPCs': npcs,
+                        'Enemies': enemies,
+                        'Misc': misc,
+                      }[category] as PlayerType[]).map((player, index) => (
+                        <PlayerCard
+                          key={index}
+                          player={player}
+                          onEdit={() => startEditing(player, index)}
+                          onDelete={() => handleRemoveEntity(category, index)}
+                          onExport={(player) => exportPlayer(player, 'json')}
+                          onInventoryChange={(itemIndex, value) => onInventoryChange(index, itemIndex, value)}
+                        />
+                      ))}
+                    </div>
+                  </Tab.Panel>
+                ))}
+              </Tab.Panels>
+            </Tab.Group>
           </CardContent>
         </Card>
       </div>
@@ -268,7 +370,7 @@ Stats:
           <PlayerModal
             player={editingPlayer}
             onInputChange={handleEditInputChange}
-            onSave={saveEditing}
+            onSave={() => saveEditing(currentTab)}
             title="Edit Player"
             isDarkMode={isDarkMode}
           />

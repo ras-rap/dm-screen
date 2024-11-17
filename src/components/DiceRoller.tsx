@@ -51,7 +51,7 @@ export const DiceRoller = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-4 gap-4 place-items-center mb-6">
-          {[4, 6, 8, 10, 12, 20, 100].map(sides => (
+          {[2, 4, 6, 8, 10, 12, 20, 100].map(sides => (
             <DiceButton key={sides} sides={sides} onRoll={rollDice} />
           ))}
         </div>
